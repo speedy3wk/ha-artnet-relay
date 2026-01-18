@@ -6,7 +6,7 @@ from typing import Any
 import voluptuous as vol
 
 from homeassistant import config_entries
-from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
+from homeassistant.config_entries import ConfigEntry, ConfigFlow, ConfigFlowResult, callback
 from homeassistant.data_entry_flow import section
 from homeassistant.helpers import selector
 
@@ -59,6 +59,13 @@ class ArtNetRelayConfigFlow(ConfigFlow, domain=DOMAIN):
 
     VERSION = 2
     _data: dict[str, Any] | None = None
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(
+        config_entry: ConfigEntry,
+    ) -> config_entries.OptionsFlow:
+        return ArtNetRelayOptionsFlowHandler(config_entry)
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
