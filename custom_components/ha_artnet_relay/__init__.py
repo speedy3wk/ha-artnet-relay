@@ -56,6 +56,7 @@ from .const import (
     PROTOCOL_ARTNET,
     PROTOCOL_SACN,
     PROTOCOL_TCP,
+    PROTOCOL_UDP,
 )
 
 _LOGGER = logging.getLogger(__name__)
