@@ -1,7 +1,5 @@
 import asyncio
 import importlib
-import shutil
-import sys
 
 import pytest
 
@@ -52,8 +50,6 @@ def test_listen_interface_ignored_when_unsupported():
     asyncio.run(_run())
 
 
-@pytest.mark.skipif(sys.platform != "linux", reason="auto_add_bind_ip relies on ip command")
-@pytest.mark.skipif(shutil.which("ip") is None, reason="ip command not available")
 def test_auto_add_bind_ip_invokes_helper():
     module = _load_module()
 
@@ -90,7 +86,11 @@ def test_auto_add_bind_ip_invokes_helper():
             bind_netmask=24,
         )
         assert await relay.start() is True
-        await wait_for_relay_socket(relay)
+
+        for _ in range(100):
+            if called.get("args"):
+                break
+            await asyncio.sleep(0.01)
 
         assert called.get("args") == ("2.0.1.1", "24", "lo")
 
