@@ -1,0 +1,6 @@
+{
+  "name": "ArtNet Relay",
+  "content_in_root": false,
+  "domains": ["ha_artnet_relay"],
+  "render_readme": true
+}

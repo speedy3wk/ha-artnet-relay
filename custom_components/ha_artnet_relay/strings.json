@@ -1,0 +1,72 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "ArtNet Relay Configuration",
+        "description": "Configure the relay.\n\nThe relay receives packets on the Listen IP/Port and forwards them to one or more targets.\n\nBroadcast Bind IP must be an IP on the same network as the broadcast destination.\n\nNetwork Interface: The relay can optionally add the Bind IP to this interface automatically.",
+        "data": {
+          "protocol": "Protocol (artnet / sacn / udp / tcp)",
+          "listen_ip": "Listen IP (e.g. 0.0.0.0)",
+          "listen_port": "Listen Port",
+          "listen_interface": "Listen Interface (optional)",
+          "broadcast_ip": "Broadcast IP (e.g. 2.255.255.255)",
+          "broadcast_port": "Broadcast Port",
+          "broadcast_bind_ip": "Broadcast Bind IP (e.g. 2.0.1.1)",
+          "network_interface": "Send Interface (e.g. end0)",
+          "source_port": "Source Port (0 = random)",
+          "auto_add_bind_ip": "Auto add Bind IP to interface",
+          "bind_netmask": "Bind netmask prefix (0 = auto)",
+          "rate_limit_pps": "Rate limit (packets per second)",
+          "targets": "Targets (list of {host, port})",
+          "allow_sources": "Allow source IPs (list)",
+          "deny_sources": "Deny source IPs (list)",
+          "artnet_universe": "ArtNet Universe filter (list)",
+          "artnet_subnet": "ArtNet Subnet filter (list)",
+          "artnet_net": "ArtNet Net filter (list)",
+          "artnet_opcodes": "ArtNet OpCodes (list)"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "This relay is already configured"
+    },
+    "error": {
+      "invalid_targets": "Targets must be a list of {host, port} objects.",
+      "invalid_sources": "Sources must be a list of IP strings.",
+      "invalid_artnet_universe": "Universe filter must be a list of integers 0-15.",
+      "invalid_artnet_subnet": "Subnet filter must be a list of integers 0-15.",
+      "invalid_artnet_net": "Net filter must be a list of integers 0-127.",
+      "invalid_artnet_opcodes": "OpCodes must be a list of strings.",
+      "invalid_rate_limit": "Rate limit must be 0 or a positive integer."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Relay Options",
+        "description": "Configure relay targets and advanced options.",
+        "data": {
+          "protocol": "Protocol (artnet / sacn / udp / tcp)",
+          "listen_ip": "Listen IP",
+          "listen_port": "Listen Port",
+          "listen_interface": "Listen Interface (optional)",
+          "broadcast_ip": "Default Target IP",
+          "broadcast_port": "Default Target Port",
+          "broadcast_bind_ip": "Bind IP (source)",
+          "network_interface": "Send Interface (optional)",
+          "source_port": "Source Port (0 = random)",
+          "auto_add_bind_ip": "Auto add Bind IP to interface",
+          "bind_netmask": "Bind netmask prefix (0 = auto)",
+          "rate_limit_pps": "Rate limit (packets per second)",
+          "targets": "Targets (list of {host, port})",
+          "allow_sources": "Allow source IPs (list)",
+          "deny_sources": "Deny source IPs (list)",
+          "artnet_universe": "ArtNet Universe filter (list)",
+          "artnet_subnet": "ArtNet Subnet filter (list)",
+          "artnet_net": "ArtNet Net filter (list)",
+          "artnet_opcodes": "ArtNet OpCodes (list)"
+        }
+      }
+    }
+  }
+}

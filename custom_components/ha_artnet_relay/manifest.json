@@ -1,0 +1,12 @@
+{
+  "domain": "ha_artnet_relay",
+  "name": "ArtNet Relay",
+  "codeowners": ["@speedy3wk"],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/speedy3wk/ha-artnet-relay",
+  "integration_type": "hub",
+  "iot_class": "local_push",
+  "requirements": [],
+  "version": "0.1.0"
+}

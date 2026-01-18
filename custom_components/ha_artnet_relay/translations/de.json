@@ -1,0 +1,72 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "ArtNet Relay Konfiguration",
+        "description": "Konfiguriere das Relay.\n\nDas Relay empfängt Pakete auf der Listen IP/Port und leitet sie an ein oder mehrere Ziele weiter.\n\nDie Broadcast Bind IP muss eine IP im selben Netzwerk wie das Broadcast-Ziel sein.\n\nNetzwerk-Interface: Das Relay kann die Bind-IP optional automatisch zu diesem Interface hinzufügen.",
+        "data": {
+          "protocol": "Protokoll (artnet / sacn / udp / tcp)",
+          "listen_ip": "Empfangs-IP (z.B. 0.0.0.0)",
+          "listen_port": "Empfangs-Port",
+          "listen_interface": "Empfangs-Interface (optional)",
+          "broadcast_ip": "Broadcast-IP (z.B. 2.255.255.255)",
+          "broadcast_port": "Broadcast-Port",
+          "broadcast_bind_ip": "Broadcast Bind-IP (z.B. 2.0.1.1)",
+          "network_interface": "Sende-Interface (z.B. end0)",
+          "source_port": "Quell-Port (0 = zufällig)",
+          "auto_add_bind_ip": "Bind-IP automatisch hinzufügen",
+          "bind_netmask": "Bind-Netzmaske (0 = auto)",
+          "rate_limit_pps": "Rate-Limit (Pakete pro Sekunde)",
+          "targets": "Ziele (Liste von {host, port})",
+          "allow_sources": "Quell-IP erlauben (Liste)",
+          "deny_sources": "Quell-IP blockieren (Liste)",
+          "artnet_universe": "ArtNet Universe Filter (Liste)",
+          "artnet_subnet": "ArtNet Subnet Filter (Liste)",
+          "artnet_net": "ArtNet Net Filter (Liste)",
+          "artnet_opcodes": "ArtNet OpCodes (Liste)"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "Dieses Relay ist bereits konfiguriert"
+    },
+    "error": {
+      "invalid_targets": "Ziele müssen eine Liste von {host, port}-Objekten sein.",
+      "invalid_sources": "Quellen müssen eine Liste von IP-Strings sein.",
+      "invalid_artnet_universe": "Universe-Filter muss eine Liste von Ganzzahlen 0-15 sein.",
+      "invalid_artnet_subnet": "Subnet-Filter muss eine Liste von Ganzzahlen 0-15 sein.",
+      "invalid_artnet_net": "Net-Filter muss eine Liste von Ganzzahlen 0-127 sein.",
+      "invalid_artnet_opcodes": "OpCodes müssen eine Liste von Strings sein.",
+      "invalid_rate_limit": "Rate-Limit muss 0 oder eine positive Ganzzahl sein."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Relay Optionen",
+        "description": "Konfiguriere Ziele und erweiterte Optionen.",
+        "data": {
+          "protocol": "Protokoll (artnet / sacn / udp / tcp)",
+          "listen_ip": "Empfangs-IP",
+          "listen_port": "Empfangs-Port",
+          "listen_interface": "Empfangs-Interface (optional)",
+          "broadcast_ip": "Standard Ziel-IP",
+          "broadcast_port": "Standard Ziel-Port",
+          "broadcast_bind_ip": "Bind-IP (Quelle)",
+          "network_interface": "Sende-Interface (optional)",
+          "source_port": "Quell-Port (0 = zufällig)",
+          "auto_add_bind_ip": "Bind-IP automatisch hinzufügen",
+          "bind_netmask": "Bind-Netzmaske (0 = auto)",
+          "rate_limit_pps": "Rate-Limit (Pakete pro Sekunde)",
+          "targets": "Ziele (Liste von {host, port})",
+          "allow_sources": "Quell-IP erlauben (Liste)",
+          "deny_sources": "Quell-IP blockieren (Liste)",
+          "artnet_universe": "ArtNet Universe Filter (Liste)",
+          "artnet_subnet": "ArtNet Subnet Filter (Liste)",
+          "artnet_net": "ArtNet Net Filter (Liste)",
+          "artnet_opcodes": "ArtNet OpCodes (Liste)"
+        }
+      }
+    }
+  }
+}
