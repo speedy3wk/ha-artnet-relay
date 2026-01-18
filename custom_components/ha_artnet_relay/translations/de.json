@@ -15,14 +15,26 @@
           "network_interface": "Sende-Interface (z.B. end0)",
           "source_port": "Quell-Port (0 = zufällig)",
           "auto_add_bind_ip": "Bind-IP automatisch hinzufügen",
-          "bind_netmask": "Bind-Netzmaske (0 = auto)",
+          "bind_netmask": "Bind-Netzmaske (0 = auto)"
+        }
+      },
+      "filters": {
+        "title": "Optionale Filter",
+        "description": "Optionale Filter (Komma oder Zeilenumbruch getrennt).",
+        "data": {
+          "allow_sources": "Quell-IP erlauben",
+          "deny_sources": "Quell-IP blockieren",
+          "artnet_universe": "ArtNet Universe Filter",
+          "artnet_subnet": "ArtNet Subnet Filter",
+          "artnet_net": "ArtNet Net Filter"
+        }
+      },
+      "advanced": {
+        "title": "Erweitert",
+        "description": "Erweiterte Einstellungen.",
+        "data": {
           "rate_limit_pps": "Rate-Limit (Pakete pro Sekunde)",
           "targets": "Ziele (Liste von {host, port})",
-          "allow_sources": "Quell-IP erlauben (Liste)",
-          "deny_sources": "Quell-IP blockieren (Liste)",
-          "artnet_universe": "ArtNet Universe Filter (Liste)",
-          "artnet_subnet": "ArtNet Subnet Filter (Liste)",
-          "artnet_net": "ArtNet Net Filter (Liste)",
           "artnet_opcodes": "ArtNet OpCodes (Liste)"
         }
       }
@@ -56,14 +68,26 @@
           "network_interface": "Sende-Interface (optional)",
           "source_port": "Quell-Port (0 = zufällig)",
           "auto_add_bind_ip": "Bind-IP automatisch hinzufügen",
-          "bind_netmask": "Bind-Netzmaske (0 = auto)",
+          "bind_netmask": "Bind-Netzmaske (0 = auto)"
+        }
+      },
+      "filters": {
+        "title": "Optionale Filter",
+        "description": "Optionale Filter (Komma oder Zeilenumbruch getrennt).",
+        "data": {
+          "allow_sources": "Quell-IP erlauben",
+          "deny_sources": "Quell-IP blockieren",
+          "artnet_universe": "ArtNet Universe Filter",
+          "artnet_subnet": "ArtNet Subnet Filter",
+          "artnet_net": "ArtNet Net Filter"
+        }
+      },
+      "advanced": {
+        "title": "Erweitert",
+        "description": "Erweiterte Einstellungen.",
+        "data": {
           "rate_limit_pps": "Rate-Limit (Pakete pro Sekunde)",
           "targets": "Ziele (Liste von {host, port})",
-          "allow_sources": "Quell-IP erlauben (Liste)",
-          "deny_sources": "Quell-IP blockieren (Liste)",
-          "artnet_universe": "ArtNet Universe Filter (Liste)",
-          "artnet_subnet": "ArtNet Subnet Filter (Liste)",
-          "artnet_net": "ArtNet Net Filter (Liste)",
           "artnet_opcodes": "ArtNet OpCodes (Liste)"
         }
       }

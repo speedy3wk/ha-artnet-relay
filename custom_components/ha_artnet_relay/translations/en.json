@@ -15,14 +15,26 @@
           "network_interface": "Send Interface (e.g. end0)",
           "source_port": "Source Port (0 = random)",
           "auto_add_bind_ip": "Auto add Bind IP to interface",
-          "bind_netmask": "Bind netmask prefix (0 = auto)",
+          "bind_netmask": "Bind netmask prefix (0 = auto)"
+        }
+      },
+      "filters": {
+        "title": "Optional filters",
+        "description": "Optional filters (comma or newline separated).",
+        "data": {
+          "allow_sources": "Allow source IPs",
+          "deny_sources": "Deny source IPs",
+          "artnet_universe": "ArtNet Universe filter",
+          "artnet_subnet": "ArtNet Subnet filter",
+          "artnet_net": "ArtNet Net filter"
+        }
+      },
+      "advanced": {
+        "title": "Advanced",
+        "description": "Advanced settings.",
+        "data": {
           "rate_limit_pps": "Rate limit (packets per second)",
           "targets": "Targets (list of {host, port})",
-          "allow_sources": "Allow source IPs (list)",
-          "deny_sources": "Deny source IPs (list)",
-          "artnet_universe": "ArtNet Universe filter (list)",
-          "artnet_subnet": "ArtNet Subnet filter (list)",
-          "artnet_net": "ArtNet Net filter (list)",
           "artnet_opcodes": "ArtNet OpCodes (list)"
         }
       }
@@ -56,14 +68,26 @@
           "network_interface": "Send Interface (optional)",
           "source_port": "Source Port (0 = random)",
           "auto_add_bind_ip": "Auto add Bind IP to interface",
-          "bind_netmask": "Bind netmask prefix (0 = auto)",
+          "bind_netmask": "Bind netmask prefix (0 = auto)"
+        }
+      },
+      "filters": {
+        "title": "Optional filters",
+        "description": "Optional filters (comma or newline separated).",
+        "data": {
+          "allow_sources": "Allow source IPs",
+          "deny_sources": "Deny source IPs",
+          "artnet_universe": "ArtNet Universe filter",
+          "artnet_subnet": "ArtNet Subnet filter",
+          "artnet_net": "ArtNet Net filter"
+        }
+      },
+      "advanced": {
+        "title": "Advanced",
+        "description": "Advanced settings.",
+        "data": {
           "rate_limit_pps": "Rate limit (packets per second)",
           "targets": "Targets (list of {host, port})",
-          "allow_sources": "Allow source IPs (list)",
-          "deny_sources": "Deny source IPs (list)",
-          "artnet_universe": "ArtNet Universe filter (list)",
-          "artnet_subnet": "ArtNet Subnet filter (list)",
-          "artnet_net": "ArtNet Net filter (list)",
           "artnet_opcodes": "ArtNet OpCodes (list)"
         }
       }

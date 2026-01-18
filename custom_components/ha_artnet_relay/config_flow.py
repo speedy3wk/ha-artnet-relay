@@ -57,39 +57,82 @@ class ArtNetRelayConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for ArtNet Relay."""
 
     VERSION = 2
+    _data: dict[str, Any] | None = None
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Handle the initial step."""
+        """Handle the initial step (basic)."""
         errors: dict[str, str] = {}
 
+        if user_input is not None:
+            self._data = user_input
+            return await self.async_step_filters()
+
+        return self.async_show_form(
+            step_id="user",
+            data_schema=self._get_basic_schema(),
+            errors=errors,
+        )
+
+    async def async_step_filters(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Handle optional filters step."""
+        errors: dict[str, str] = {}
         if user_input is not None:
             errors = _validate_user_input(user_input)
             if errors:
                 return self.async_show_form(
-                    step_id="user",
-                    data_schema=self._get_data_schema(user_input),
+                    step_id="filters",
+                    data_schema=self._get_filters_schema(user_input),
                     errors=errors,
                 )
-            # Validate IPs are valid format
+            assert self._data is not None
+            self._data.update(user_input)
+            return await self.async_step_advanced()
+
+        return self.async_show_form(
+            step_id="filters",
+            data_schema=self._get_filters_schema(),
+            errors=errors,
+        )
+
+    async def async_step_advanced(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Handle advanced step."""
+        errors: dict[str, str] = {}
+        if user_input is not None:
+            errors = _validate_user_input(user_input)
+            if errors:
+                return self.async_show_form(
+                    step_id="advanced",
+                    data_schema=self._get_advanced_schema(user_input),
+                    errors=errors,
+                )
+            assert self._data is not None
+            self._data.update(user_input)
             await self.async_set_unique_id(
-                f"{user_input[CONF_LISTEN_IP]}:{user_input[CONF_LISTEN_PORT]}"
+                f"{self._data[CONF_LISTEN_IP]}:{self._data[CONF_LISTEN_PORT]}"
             )
             self._abort_if_unique_id_configured()
 
             return self.async_create_entry(
-                title=f"ArtNet Relay ({user_input[CONF_LISTEN_IP]}:{user_input[CONF_LISTEN_PORT]} → {user_input[CONF_BROADCAST_IP]})",
-                data=user_input,
+                title=(
+                    f"ArtNet Relay ({self._data[CONF_LISTEN_IP]}:{self._data[CONF_LISTEN_PORT]} → "
+                    f"{self._data[CONF_BROADCAST_IP]})"
+                ),
+                data=self._data,
             )
 
         return self.async_show_form(
-            step_id="user",
-            data_schema=self._get_data_schema(),
+            step_id="advanced",
+            data_schema=self._get_advanced_schema(),
             errors=errors,
         )
 
-    def _get_data_schema(self, defaults: dict[str, Any] | None = None) -> vol.Schema:
+    def _get_basic_schema(self, defaults: dict[str, Any] | None = None) -> vol.Schema:
         current = defaults or {}
         return vol.Schema(
             {
@@ -135,6 +178,50 @@ class ArtNetRelayConfigFlow(ConfigFlow, domain=DOMAIN):
                     CONF_BIND_NETMASK,
                     default=current.get(CONF_BIND_NETMASK, DEFAULT_BIND_NETMASK),
                 ): int,
+            }
+        )
+
+    def _get_filters_schema(self, defaults: dict[str, Any] | None = None) -> vol.Schema:
+        current = defaults or {}
+        return vol.Schema(
+            {
+                vol.Optional(
+                    CONF_ALLOW_SOURCES,
+                    default=current.get(CONF_ALLOW_SOURCES, ""),
+                ): selector.TextSelector(
+                    selector.TextSelectorConfig(multiline=True)
+                ),
+                vol.Optional(
+                    CONF_DENY_SOURCES,
+                    default=current.get(CONF_DENY_SOURCES, ""),
+                ): selector.TextSelector(
+                    selector.TextSelectorConfig(multiline=True)
+                ),
+                vol.Optional(
+                    CONF_ARTNET_UNIVERSE,
+                    default=current.get(CONF_ARTNET_UNIVERSE, ""),
+                ): selector.TextSelector(
+                    selector.TextSelectorConfig(multiline=True)
+                ),
+                vol.Optional(
+                    CONF_ARTNET_SUBNET,
+                    default=current.get(CONF_ARTNET_SUBNET, ""),
+                ): selector.TextSelector(
+                    selector.TextSelectorConfig(multiline=True)
+                ),
+                vol.Optional(
+                    CONF_ARTNET_NET,
+                    default=current.get(CONF_ARTNET_NET, ""),
+                ): selector.TextSelector(
+                    selector.TextSelectorConfig(multiline=True)
+                ),
+            }
+        )
+
+    def _get_advanced_schema(self, defaults: dict[str, Any] | None = None) -> vol.Schema:
+        current = defaults or {}
+        return vol.Schema(
+            {
                 vol.Optional(
                     CONF_RATE_LIMIT_PPS,
                     default=current.get(CONF_RATE_LIMIT_PPS, DEFAULT_RATE_LIMIT_PPS),
@@ -143,26 +230,6 @@ class ArtNetRelayConfigFlow(ConfigFlow, domain=DOMAIN):
                 ),
                 vol.Optional(
                     CONF_TARGETS, default=current.get(CONF_TARGETS, [])
-                ): selector.ObjectSelector(),
-                vol.Optional(
-                    CONF_ALLOW_SOURCES,
-                    default=current.get(CONF_ALLOW_SOURCES, DEFAULT_ALLOW_SOURCES),
-                ): selector.ObjectSelector(),
-                vol.Optional(
-                    CONF_DENY_SOURCES,
-                    default=current.get(CONF_DENY_SOURCES, DEFAULT_DENY_SOURCES),
-                ): selector.ObjectSelector(),
-                vol.Optional(
-                    CONF_ARTNET_UNIVERSE,
-                    default=current.get(CONF_ARTNET_UNIVERSE, DEFAULT_ARTNET_UNIVERSE),
-                ): selector.ObjectSelector(),
-                vol.Optional(
-                    CONF_ARTNET_SUBNET,
-                    default=current.get(CONF_ARTNET_SUBNET, DEFAULT_ARTNET_SUBNET),
-                ): selector.ObjectSelector(),
-                vol.Optional(
-                    CONF_ARTNET_NET,
-                    default=current.get(CONF_ARTNET_NET, DEFAULT_ARTNET_NET),
                 ): selector.ObjectSelector(),
                 vol.Optional(
                     CONF_ARTNET_OPCODES,
@@ -175,41 +242,66 @@ class ArtNetRelayConfigFlow(ConfigFlow, domain=DOMAIN):
                 ),
             }
         )
-
-    @staticmethod
-    @config_entries.callback
-    def async_get_options_flow(config_entry: config_entries.ConfigEntry):
-        return ArtNetRelayOptionsFlowHandler(config_entry)
-
-
 class ArtNetRelayOptionsFlowHandler(config_entries.OptionsFlow):
     """Handle ArtNet Relay options."""
 
     def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
         self._config_entry = config_entry
+        self._options: dict[str, Any] = {}
 
     async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        if user_input is not None:
+            self._options = user_input
+            return await self.async_step_filters()
+
+        current = {**self._config_entry.data, **self._config_entry.options}
+
+        return self.async_show_form(
+            step_id="init",
+            data_schema=ArtNetRelayConfigFlow._get_basic_schema(self, current),
+        )
+
+    async def async_step_filters(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         if user_input is not None:
             errors = _validate_user_input(user_input)
             if errors:
                 return self.async_show_form(
-                    step_id="init",
-                    data_schema=self._get_options_schema(user_input),
+                    step_id="filters",
+                    data_schema=ArtNetRelayConfigFlow._get_filters_schema(self, user_input),
                     errors=errors,
                 )
-            return self.async_create_entry(title="", data=user_input)
+            self._options.update(user_input)
+            return await self.async_step_advanced()
 
         current = {**self._config_entry.data, **self._config_entry.options}
-
         return self.async_show_form(
-            step_id="init",
-            data_schema=self._get_options_schema(current),
+            step_id="filters",
+            data_schema=ArtNetRelayConfigFlow._get_filters_schema(self, current),
         )
 
-    def _get_options_schema(self, current: dict[str, Any]) -> vol.Schema:
-        return ArtNetRelayConfigFlow._get_data_schema(self, current)
+    async def async_step_advanced(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        if user_input is not None:
+            errors = _validate_user_input(user_input)
+            if errors:
+                return self.async_show_form(
+                    step_id="advanced",
+                    data_schema=ArtNetRelayConfigFlow._get_advanced_schema(self, user_input),
+                    errors=errors,
+                )
+            self._options.update(user_input)
+            return self.async_create_entry(title="", data=self._options)
+
+        current = {**self._config_entry.data, **self._config_entry.options}
+        return self.async_show_form(
+            step_id="advanced",
+            data_schema=ArtNetRelayConfigFlow._get_advanced_schema(self, current),
+        )
 
 
 def _validate_user_input(user_input: dict[str, Any]) -> dict[str, str]:
@@ -234,8 +326,14 @@ def _validate_user_input(user_input: dict[str, Any]) -> dict[str, str]:
                 return errors
 
     for key in (CONF_ALLOW_SOURCES, CONF_DENY_SOURCES):
-        value = user_input.get(key, [])
-        if value and (not isinstance(value, list) or any(not isinstance(v, str) for v in value)):
+        value = user_input.get(key, "")
+        if isinstance(value, list):
+            if any(not isinstance(v, str) for v in value):
+                errors["base"] = "invalid_sources"
+                return errors
+        elif isinstance(value, str):
+            pass
+        else:
             errors["base"] = "invalid_sources"
             return errors
 
@@ -244,15 +342,33 @@ def _validate_user_input(user_input: dict[str, Any]) -> dict[str, str]:
         (CONF_ARTNET_SUBNET, 15, "invalid_artnet_subnet"),
         (CONF_ARTNET_NET, 127, "invalid_artnet_net"),
     ):
-        value = user_input.get(key, [])
-        if value:
-            if not isinstance(value, list):
-                errors["base"] = error_key
-                return errors
+        value = user_input.get(key, "")
+        if not value:
+            continue
+        items: list[int] = []
+        if isinstance(value, list):
             for item in value:
                 if not isinstance(item, int) or not (0 <= item <= max_value):
                     errors["base"] = error_key
                     return errors
+                items.append(item)
+        elif isinstance(value, str):
+            parts = [p.strip() for p in value.replace("\n", ",").split(",")]
+            for part in parts:
+                if not part:
+                    continue
+                try:
+                    num = int(part)
+                except ValueError:
+                    errors["base"] = error_key
+                    return errors
+                if not (0 <= num <= max_value):
+                    errors["base"] = error_key
+                    return errors
+                items.append(num)
+        else:
+            errors["base"] = error_key
+            return errors
 
     opcodes = user_input.get(CONF_ARTNET_OPCODES, DEFAULT_ARTNET_OPCODES)
     if opcodes:

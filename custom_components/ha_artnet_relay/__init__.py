@@ -191,6 +191,9 @@ def _parse_targets(value: object, default_port: int) -> list[RelayTarget]:
 def _parse_ip_list(value: object) -> list[str]:
     if isinstance(value, list):
         return [str(item).strip() for item in value if str(item).strip()]
+    if isinstance(value, str):
+        parts = [p.strip() for p in value.replace("\n", ",").split(",")]
+        return [p for p in parts if p]
     return []
 
 
@@ -207,6 +210,17 @@ def _parse_int_list(value: object) -> list[int]:
             try:
                 items.append(int(item))
             except (TypeError, ValueError):
+                continue
+        return items
+    if isinstance(value, str):
+        items: list[int] = []
+        parts = [p.strip() for p in value.replace("\n", ",").split(",")]
+        for part in parts:
+            if not part:
+                continue
+            try:
+                items.append(int(part))
+            except ValueError:
                 continue
         return items
     return []
