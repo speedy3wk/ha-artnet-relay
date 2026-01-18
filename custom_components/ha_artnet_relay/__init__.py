@@ -185,6 +185,23 @@ def _parse_targets(value: object, default_port: int) -> list[RelayTarget]:
             port = int(item.get("port", default_port))
             if host:
                 targets.append(RelayTarget(host, port))
+    if isinstance(value, str):
+        parts = [p.strip() for p in value.replace("\n", ",").split(",")]
+        for part in parts:
+            if not part:
+                continue
+            if ":" in part:
+                host, port_text = part.split(":", 1)
+                try:
+                    port = int(port_text)
+                except ValueError:
+                    port = default_port
+            else:
+                host = part
+                port = default_port
+            host = host.strip()
+            if host:
+                targets.append(RelayTarget(host, port))
     return targets
 
 

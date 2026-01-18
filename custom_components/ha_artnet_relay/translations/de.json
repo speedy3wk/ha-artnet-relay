@@ -2,41 +2,84 @@
   "config": {
     "step": {
       "user": {
-        "title": "ArtNet Relay Konfiguration",
-        "description": "Konfiguriere das Relay.\n\nDas Relay empfängt Pakete auf der Listen IP/Port und leitet sie an ein oder mehrere Ziele weiter.\n\nDie Broadcast Bind IP muss eine IP im selben Netzwerk wie das Broadcast-Ziel sein.\n\nNetzwerk-Interface: Das Relay kann die Bind-IP optional automatisch zu diesem Interface hinzufügen.",
-        "data": {
-          "protocol": "Protokoll (artnet / sacn / udp / tcp)",
-          "listen_ip": "Empfangs-IP (z.B. 0.0.0.0)",
-          "listen_port": "Empfangs-Port",
-          "listen_interface": "Empfangs-Interface (optional)",
-          "broadcast_ip": "Broadcast-IP (z.B. 2.255.255.255)",
-          "broadcast_port": "Broadcast-Port",
-          "broadcast_bind_ip": "Broadcast Bind-IP (z.B. 2.0.1.1)",
-          "network_interface": "Sende-Interface (z.B. end0)",
-          "source_port": "Quell-Port (0 = zufällig)",
-          "auto_add_bind_ip": "Bind-IP automatisch hinzufügen",
-          "bind_netmask": "Bind-Netzmaske (0 = auto)"
+        "title": "ArtNet Relay Einrichtung",
+        "description": "DMX empfangen und weiterleiten. Optionale Felder können leer bleiben und verwenden Defaults.",
+        "sections": {
+          "basic": {
+            "name": "Empfang",
+            "description": "Protokoll und Empfangseinstellungen.",
+            "data": {
+              "protocol": "Protokoll",
+              "listen_ip": "Empfangs-IP (z.B. 0.0.0.0)",
+              "listen_port": "Empfangs-Port",
+              "listen_interface": "Empfangs-Interface (optional)"
+            },
+            "data_description": {
+              "protocol": "Art‑Net (DMX) und sACN (E1.31) sind DMX‑über‑UDP. UDP‑Relay leitet rohe UDP‑Payloads weiter. TCP‑Relay leitet rohe TCP‑Streams weiter.",
+              "listen_ip": "0.0.0.0 lauscht auf allen Interfaces. Eine spezifische IP bindet an genau ein Interface.",
+              "listen_port": "Port, auf dem für das gewählte Protokoll gelauscht wird.",
+              "listen_interface": "Optionaler NIC‑Name (z.B. eth0), um an ein bestimmtes Interface zu binden."
+            }
+          },
+          "targets": {
+            "name": "Weiterleitungsziele",
+            "description": "Wohin empfangene Pakete weitergeleitet werden.",
+            "data": {
+              "broadcast_ip": "Standard Ziel-IP (z.B. 2.255.255.255)",
+              "broadcast_port": "Standard Ziel-Port",
+              "broadcast_bind_ip": "Bind-IP (Quelle)",
+              "network_interface": "Sende-Interface (z.B. en0)",
+              "source_port": "Quell-Port (0 = zufällig)",
+              "auto_add_bind_ip": "Bind-IP automatisch hinzufügen",
+              "bind_netmask": "Bind-Netzmaske (0 = auto)",
+              "targets": "Ziele (host:port, Komma- oder Zeilenumbruch-getrennt)"
+            },
+            "data_description": {
+              "broadcast_ip": "Wird genutzt, wenn keine expliziten Ziele angegeben sind. Unicast oder Broadcast möglich.",
+              "broadcast_port": "Standard‑Zielport für weitergeleitete Pakete.",
+              "broadcast_bind_ip": "Quell‑IP für ausgehende Pakete. Default = OS entscheidet.",
+              "network_interface": "Optionales Ausgangs‑Interface für Routing. Leer = Standardroute.",
+              "source_port": "Quell‑Port für ausgehende Pakete. 0 = zufällig.",
+              "auto_add_bind_ip": "Fügt die Bind‑IP bei Bedarf automatisch zum Interface hinzu.",
+              "bind_netmask": "CIDR‑Präfixlänge zur Bind‑IP. 0 = auto.",
+              "targets": "Beispiel: 192.168.1.10:6454 oder 192.168.1.10. Mehrere Werte mit Komma oder Zeilenumbruch."
+            }
+          },
+          "filters": {
+            "name": "Filter (optional)",
+            "description": "Weiterleitung nach Quelle oder Art‑Net‑Universe einschränken.",
+            "data": {
+              "allow_sources": "Quell-IP erlauben",
+              "deny_sources": "Quell-IP blockieren",
+              "artnet_universe": "ArtNet Universe Filter",
+              "artnet_subnet": "ArtNet Subnet Filter",
+              "artnet_net": "ArtNet Net Filter"
+            },
+            "data_description": {
+              "allow_sources": "Liste von Quell‑IPs (Komma oder Zeilenumbruch). Leer = alle erlauben.",
+              "deny_sources": "Liste von Quell‑IPs, die blockiert werden.",
+              "artnet_universe": "Nur Art‑Net. Werte 0–15.",
+              "artnet_subnet": "Nur Art‑Net. Werte 0–15.",
+              "artnet_net": "Nur Art‑Net. Werte 0–127."
+            }
+          },
+          "advanced": {
+            "name": "Erweitert (optional)",
+            "description": "Rate‑Limit und Opcode‑Filter.",
+            "data": {
+              "rate_limit_pps": "Rate-Limit (Pakete pro Sekunde)",
+              "artnet_opcodes": "ArtNet OpCodes (Liste)"
+            },
+            "data_description": {
+              "rate_limit_pps": "0 deaktiviert das Rate‑Limit.",
+              "artnet_opcodes": "Nur Art‑Net. Leer lassen = alle OpCodes erlauben."
+            }
+          }
         }
       },
-      "filters": {
-        "title": "Optionale Filter",
-        "description": "Optionale Filter (Komma oder Zeilenumbruch getrennt).",
-        "data": {
-          "allow_sources": "Quell-IP erlauben",
-          "deny_sources": "Quell-IP blockieren",
-          "artnet_universe": "ArtNet Universe Filter",
-          "artnet_subnet": "ArtNet Subnet Filter",
-          "artnet_net": "ArtNet Net Filter"
-        }
-      },
-      "advanced": {
-        "title": "Erweitert",
-        "description": "Erweiterte Einstellungen.",
-        "data": {
-          "rate_limit_pps": "Rate-Limit (Pakete pro Sekunde)",
-          "targets": "Ziele (Liste von {host, port})",
-          "artnet_opcodes": "ArtNet OpCodes (Liste)"
-        }
+      "optional": {
+        "title": "Optionale Filter & Tuning",
+        "description": "(unused)"
       }
     },
     "abort": {
@@ -56,40 +99,83 @@
     "step": {
       "init": {
         "title": "Relay Optionen",
-        "description": "Konfiguriere Ziele und erweiterte Optionen.",
-        "data": {
-          "protocol": "Protokoll (artnet / sacn / udp / tcp)",
-          "listen_ip": "Empfangs-IP",
-          "listen_port": "Empfangs-Port",
-          "listen_interface": "Empfangs-Interface (optional)",
-          "broadcast_ip": "Standard Ziel-IP",
-          "broadcast_port": "Standard Ziel-Port",
-          "broadcast_bind_ip": "Bind-IP (Quelle)",
-          "network_interface": "Sende-Interface (optional)",
-          "source_port": "Quell-Port (0 = zufällig)",
-          "auto_add_bind_ip": "Bind-IP automatisch hinzufügen",
-          "bind_netmask": "Bind-Netzmaske (0 = auto)"
+        "description": "Optionen anpassen. Optionale Felder können leer bleiben und verwenden Defaults.",
+        "sections": {
+          "basic": {
+            "name": "Empfang",
+            "description": "Protokoll und Empfangseinstellungen.",
+            "data": {
+              "protocol": "Protokoll",
+              "listen_ip": "Empfangs-IP",
+              "listen_port": "Empfangs-Port",
+              "listen_interface": "Empfangs-Interface (optional)"
+            },
+            "data_description": {
+              "protocol": "Art‑Net (DMX) und sACN (E1.31) sind DMX‑über‑UDP. UDP‑Relay leitet rohe UDP‑Payloads weiter. TCP‑Relay leitet rohe TCP‑Streams weiter.",
+              "listen_ip": "0.0.0.0 lauscht auf allen Interfaces. Eine spezifische IP bindet an genau ein Interface.",
+              "listen_port": "Port, auf dem für das gewählte Protokoll gelauscht wird.",
+              "listen_interface": "Optionaler NIC‑Name (z.B. eth0), um an ein bestimmtes Interface zu binden."
+            }
+          },
+          "targets": {
+            "name": "Weiterleitungsziele",
+            "description": "Wohin empfangene Pakete weitergeleitet werden.",
+            "data": {
+              "broadcast_ip": "Standard Ziel-IP",
+              "broadcast_port": "Standard Ziel-Port",
+              "broadcast_bind_ip": "Bind-IP (Quelle)",
+              "network_interface": "Sende-Interface (optional)",
+              "source_port": "Quell-Port (0 = zufällig)",
+              "auto_add_bind_ip": "Bind-IP automatisch hinzufügen",
+              "bind_netmask": "Bind-Netzmaske (0 = auto)",
+              "targets": "Ziele (host:port, Komma- oder Zeilenumbruch-getrennt)"
+            },
+            "data_description": {
+              "broadcast_ip": "Wird genutzt, wenn keine expliziten Ziele angegeben sind. Unicast oder Broadcast möglich.",
+              "broadcast_port": "Standard‑Zielport für weitergeleitete Pakete.",
+              "broadcast_bind_ip": "Quell‑IP für ausgehende Pakete. Default = OS entscheidet.",
+              "network_interface": "Optionales Ausgangs‑Interface für Routing. Leer = Standardroute.",
+              "source_port": "Quell‑Port für ausgehende Pakete. 0 = zufällig.",
+              "auto_add_bind_ip": "Fügt die Bind‑IP bei Bedarf automatisch zum Interface hinzu.",
+              "bind_netmask": "CIDR‑Präfixlänge zur Bind‑IP. 0 = auto.",
+              "targets": "Beispiel: 192.168.1.10:6454 oder 192.168.1.10. Mehrere Werte mit Komma oder Zeilenumbruch."
+            }
+          },
+          "filters": {
+            "name": "Filter (optional)",
+            "description": "Weiterleitung nach Quelle oder Art‑Net‑Universe einschränken.",
+            "data": {
+              "allow_sources": "Quell-IP erlauben",
+              "deny_sources": "Quell-IP blockieren",
+              "artnet_universe": "ArtNet Universe Filter",
+              "artnet_subnet": "ArtNet Subnet Filter",
+              "artnet_net": "ArtNet Net Filter"
+            },
+            "data_description": {
+              "allow_sources": "Liste von Quell‑IPs (Komma oder Zeilenumbruch). Leer = alle erlauben.",
+              "deny_sources": "Liste von Quell‑IPs, die blockiert werden.",
+              "artnet_universe": "Nur Art‑Net. Werte 0–15.",
+              "artnet_subnet": "Nur Art‑Net. Werte 0–15.",
+              "artnet_net": "Nur Art‑Net. Werte 0–127."
+            }
+          },
+          "advanced": {
+            "name": "Erweitert (optional)",
+            "description": "Rate‑Limit und Opcode‑Filter.",
+            "data": {
+              "rate_limit_pps": "Rate-Limit (Pakete pro Sekunde)",
+              "artnet_opcodes": "ArtNet OpCodes (Liste)"
+            },
+            "data_description": {
+              "rate_limit_pps": "0 deaktiviert das Rate‑Limit.",
+              "artnet_opcodes": "Nur Art‑Net. Leer lassen = alle OpCodes erlauben."
+            }
+          }
         }
       },
-      "filters": {
-        "title": "Optionale Filter",
-        "description": "Optionale Filter (Komma oder Zeilenumbruch getrennt).",
-        "data": {
-          "allow_sources": "Quell-IP erlauben",
-          "deny_sources": "Quell-IP blockieren",
-          "artnet_universe": "ArtNet Universe Filter",
-          "artnet_subnet": "ArtNet Subnet Filter",
-          "artnet_net": "ArtNet Net Filter"
-        }
-      },
-      "advanced": {
-        "title": "Erweitert",
-        "description": "Erweiterte Einstellungen.",
-        "data": {
-          "rate_limit_pps": "Rate-Limit (Pakete pro Sekunde)",
-          "targets": "Ziele (Liste von {host, port})",
-          "artnet_opcodes": "ArtNet OpCodes (Liste)"
-        }
+      "optional": {
+        "title": "Optionale Filter & Tuning",
+        "description": "(unused)"
       }
     }
   }

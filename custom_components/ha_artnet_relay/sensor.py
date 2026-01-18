@@ -4,7 +4,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from homeassistant.components.sensor import SensorDeviceClass, SensorEntity, SensorStateClass
+from homeassistant.components.sensor import (
+    SensorDeviceClass,
+    SensorEntity,
+    SensorEntityDescription,
+    SensorStateClass,
+)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo, EntityCategory
@@ -15,11 +20,8 @@ from .const import DOMAIN
 
 
 @dataclass(frozen=True)
-class RelaySensorDescription:
-    key: str
-    name: str
-    device_class: SensorDeviceClass | None = None
-    state_class: SensorStateClass | None = None
+class RelaySensorDescription(SensorEntityDescription):
+    """Describes a relay diagnostic sensor."""
 
 
 SENSORS: tuple[RelaySensorDescription, ...] = (
@@ -27,21 +29,24 @@ SENSORS: tuple[RelaySensorDescription, ...] = (
         key="packet_count",
         name="Packets relayed",
         state_class=SensorStateClass.TOTAL_INCREASING,
+        has_entity_name=True,
     ),
     RelaySensorDescription(
         key="error_count",
         name="Relay errors",
         state_class=SensorStateClass.TOTAL_INCREASING,
+        has_entity_name=True,
     ),
     RelaySensorDescription(
         key="last_packet",
         name="Last packet",
         device_class=SensorDeviceClass.TIMESTAMP,
+        has_entity_name=True,
     ),
     RelaySensorDescription(
         key="targets",
         name="Targets",
-        state_class=SensorStateClass.MEASUREMENT,
+        has_entity_name=True,
     ),
 )
 
@@ -76,7 +81,10 @@ class RelaySensor(CoordinatorEntity[ArtNetRelayCoordinator], SensorEntity):
 
     @property
     def native_value(self) -> Any:
-        return self.coordinator.data.get(self.entity_description.key)
+        value = self.coordinator.data.get(self.entity_description.key)
+        if self.entity_description.key == "targets" and isinstance(value, (list, tuple)):
+            return ", ".join(str(item) for item in value)
+        return value
 
     @property
     def device_info(self) -> DeviceInfo:

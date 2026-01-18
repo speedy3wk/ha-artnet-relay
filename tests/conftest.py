@@ -14,6 +14,7 @@ def _install_homeassistant_stubs() -> None:
     ha_helpers = types.ModuleType("homeassistant.helpers")
     ha_helpers_selector = types.ModuleType("homeassistant.helpers.selector")
     ha_helpers_update = types.ModuleType("homeassistant.helpers.update_coordinator")
+    ha_data_entry_flow = types.ModuleType("homeassistant.data_entry_flow")
     ha_util = types.ModuleType("homeassistant.util")
     ha_util_dt = types.ModuleType("homeassistant.util.dt")
 
@@ -48,6 +49,9 @@ def _install_homeassistant_stubs() -> None:
         def __init__(self, *args, **kwargs):
             pass
 
+        def __call__(self, value):
+            return value
+
     class TextSelectorConfig:  # pragma: no cover - stub
         def __init__(self, *args, **kwargs):
             pass
@@ -55,6 +59,9 @@ def _install_homeassistant_stubs() -> None:
     class NumberSelector:  # pragma: no cover - stub
         def __init__(self, *args, **kwargs):
             pass
+
+        def __call__(self, value):
+            return value
 
     class NumberSelectorConfig:  # pragma: no cover - stub
         def __init__(self, *args, **kwargs):
@@ -67,13 +74,29 @@ def _install_homeassistant_stubs() -> None:
         def __init__(self, *args, **kwargs):
             pass
 
+        def __call__(self, value):
+            return value
+
     class SelectSelectorConfig:  # pragma: no cover - stub
         def __init__(self, *args, **kwargs):
             pass
 
+    class BooleanSelector:  # pragma: no cover - stub
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def __call__(self, value):
+            return value
+
     class ObjectSelector:  # pragma: no cover - stub
         def __init__(self, *args, **kwargs):
             pass
+
+        def __call__(self, value):
+            return value
+
+    def section(schema, options=None):  # pragma: no cover - stub
+        return schema
 
     def utcnow():
         return datetime.now(timezone.utc)
@@ -92,8 +115,10 @@ def _install_homeassistant_stubs() -> None:
     ha_helpers_selector.NumberSelectorMode = NumberSelectorMode
     ha_helpers_selector.SelectSelector = SelectSelector
     ha_helpers_selector.SelectSelectorConfig = SelectSelectorConfig
+    ha_helpers_selector.BooleanSelector = BooleanSelector
     ha_helpers_selector.ObjectSelector = ObjectSelector
     ha_util_dt.utcnow = utcnow
+    ha_data_entry_flow.section = section
 
     sys.modules["homeassistant"] = ha
     sys.modules["homeassistant.config_entries"] = ha_config_entries
@@ -101,6 +126,7 @@ def _install_homeassistant_stubs() -> None:
     sys.modules["homeassistant.helpers"] = ha_helpers
     sys.modules["homeassistant.helpers.selector"] = ha_helpers_selector
     sys.modules["homeassistant.helpers.update_coordinator"] = ha_helpers_update
+    sys.modules["homeassistant.data_entry_flow"] = ha_data_entry_flow
     sys.modules["homeassistant.util"] = ha_util
     sys.modules["homeassistant.util.dt"] = ha_util_dt
 

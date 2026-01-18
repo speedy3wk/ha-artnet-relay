@@ -7,6 +7,7 @@ import voluptuous as vol
 
 from homeassistant import config_entries
 from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
+from homeassistant.data_entry_flow import section
 from homeassistant.helpers import selector
 
 from .const import (
@@ -62,186 +63,255 @@ class ArtNetRelayConfigFlow(ConfigFlow, domain=DOMAIN):
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Handle the initial step (basic)."""
+        """Handle the setup step."""
         errors: dict[str, str] = {}
 
         if user_input is not None:
-            self._data = user_input
-            return await self.async_step_filters()
-
-        return self.async_show_form(
-            step_id="user",
-            data_schema=self._get_basic_schema(),
-            errors=errors,
-        )
-
-    async def async_step_filters(
-        self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
-        """Handle optional filters step."""
-        errors: dict[str, str] = {}
-        if user_input is not None:
-            errors = _validate_user_input(user_input)
+            flat_input = _flatten_sections(user_input)
+            errors = _validate_user_input(flat_input)
             if errors:
                 return self.async_show_form(
-                    step_id="filters",
-                    data_schema=self._get_filters_schema(user_input),
+                    step_id="user",
+                    data_schema=self._get_setup_schema(user_input),
                     errors=errors,
                 )
-            assert self._data is not None
-            self._data.update(user_input)
-            return await self.async_step_advanced()
-
-        return self.async_show_form(
-            step_id="filters",
-            data_schema=self._get_filters_schema(),
-            errors=errors,
-        )
-
-    async def async_step_advanced(
-        self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
-        """Handle advanced step."""
-        errors: dict[str, str] = {}
-        if user_input is not None:
-            errors = _validate_user_input(user_input)
-            if errors:
-                return self.async_show_form(
-                    step_id="advanced",
-                    data_schema=self._get_advanced_schema(user_input),
-                    errors=errors,
-                )
-            assert self._data is not None
-            self._data.update(user_input)
+            self._data = flat_input
             await self.async_set_unique_id(
                 f"{self._data[CONF_LISTEN_IP]}:{self._data[CONF_LISTEN_PORT]}"
             )
             self._abort_if_unique_id_configured()
-
             return self.async_create_entry(
-                title=(
-                    f"ArtNet Relay ({self._data[CONF_LISTEN_IP]}:{self._data[CONF_LISTEN_PORT]} → "
-                    f"{self._data[CONF_BROADCAST_IP]})"
-                ),
+                title=f"ArtNet Relay ({self._data[CONF_LISTEN_IP]}:{self._data[CONF_LISTEN_PORT]})",
                 data=self._data,
             )
 
         return self.async_show_form(
-            step_id="advanced",
-            data_schema=self._get_advanced_schema(),
+            step_id="user",
+            data_schema=self._get_setup_schema(),
             errors=errors,
         )
 
-    def _get_basic_schema(self, defaults: dict[str, Any] | None = None) -> vol.Schema:
-        current = defaults or {}
+    def _get_setup_schema(self, defaults: dict[str, Any] | None = None) -> vol.Schema:
+        current = _flatten_sections(defaults or {})
+        targets_text = _targets_to_text(current.get(CONF_TARGETS, []))
+        protocol = current.get(CONF_PROTOCOL, DEFAULT_PROTOCOL)
+        allow_sources = _list_to_text(current.get(CONF_ALLOW_SOURCES, ""))
+        deny_sources = _list_to_text(current.get(CONF_DENY_SOURCES, ""))
+        artnet_universe = _list_to_text(current.get(CONF_ARTNET_UNIVERSE, ""))
+        artnet_subnet = _list_to_text(current.get(CONF_ARTNET_SUBNET, ""))
+        artnet_net = _list_to_text(current.get(CONF_ARTNET_NET, ""))
         return vol.Schema(
             {
-                vol.Required(
-                    CONF_PROTOCOL, default=current.get(CONF_PROTOCOL, DEFAULT_PROTOCOL)
-                ): vol.In(PROTOCOLS),
-                vol.Required(
-                    CONF_LISTEN_IP, default=current.get(CONF_LISTEN_IP, DEFAULT_LISTEN_IP)
-                ): str,
-                vol.Required(
-                    CONF_LISTEN_PORT,
-                    default=current.get(CONF_LISTEN_PORT, DEFAULT_LISTEN_PORT),
-                ): int,
-                vol.Optional(
-                    CONF_LISTEN_INTERFACE,
-                    default=current.get(CONF_LISTEN_INTERFACE, DEFAULT_LISTEN_INTERFACE),
-                ): str,
-                vol.Required(
-                    CONF_BROADCAST_IP,
-                    default=current.get(CONF_BROADCAST_IP, DEFAULT_BROADCAST_IP),
-                ): str,
-                vol.Required(
-                    CONF_BROADCAST_PORT,
-                    default=current.get(CONF_BROADCAST_PORT, DEFAULT_BROADCAST_PORT),
-                ): int,
-                vol.Required(
-                    CONF_BROADCAST_BIND_IP,
-                    default=current.get(CONF_BROADCAST_BIND_IP, DEFAULT_BROADCAST_BIND_IP),
-                ): str,
-                vol.Required(
-                    CONF_NETWORK_INTERFACE,
-                    default=current.get(CONF_NETWORK_INTERFACE, DEFAULT_NETWORK_INTERFACE),
-                ): str,
-                vol.Optional(
-                    CONF_SOURCE_PORT,
-                    default=current.get(CONF_SOURCE_PORT, DEFAULT_SOURCE_PORT),
-                ): int,
-                vol.Optional(
-                    CONF_AUTO_ADD_BIND_IP,
-                    default=current.get(CONF_AUTO_ADD_BIND_IP, DEFAULT_AUTO_ADD_BIND_IP),
-                ): bool,
-                vol.Optional(
-                    CONF_BIND_NETMASK,
-                    default=current.get(CONF_BIND_NETMASK, DEFAULT_BIND_NETMASK),
-                ): int,
+                vol.Required("basic"): section(
+                    vol.Schema(
+                        {
+                            vol.Required(
+                                CONF_PROTOCOL,
+                                default=current.get(CONF_PROTOCOL, DEFAULT_PROTOCOL),
+                            ): vol.In(PROTOCOLS),
+                            vol.Required(
+                                CONF_LISTEN_IP,
+                                default=current.get(CONF_LISTEN_IP, DEFAULT_LISTEN_IP),
+                            ): selector.TextSelector(),
+                            vol.Required(
+                                CONF_LISTEN_PORT,
+                                default=current.get(CONF_LISTEN_PORT, DEFAULT_LISTEN_PORT),
+                            ): selector.NumberSelector(
+                                selector.NumberSelectorConfig(
+                                    min=1, max=65535, mode=selector.NumberSelectorMode.BOX
+                                )
+                            ),
+                            vol.Optional(
+                                CONF_LISTEN_INTERFACE,
+                                default=current.get(
+                                    CONF_LISTEN_INTERFACE, DEFAULT_LISTEN_INTERFACE
+                                ),
+                            ): selector.TextSelector(),
+                        }
+                    ),
+                    {"collapsed": False},
+                ),
+                vol.Required("targets"): section(
+                    vol.Schema(
+                        {
+                            vol.Required(
+                                CONF_BROADCAST_IP,
+                                default=current.get(
+                                    CONF_BROADCAST_IP, DEFAULT_BROADCAST_IP
+                                ),
+                            ): selector.TextSelector(),
+                            vol.Required(
+                                CONF_BROADCAST_PORT,
+                                default=current.get(
+                                    CONF_BROADCAST_PORT, DEFAULT_BROADCAST_PORT
+                                ),
+                            ): selector.NumberSelector(
+                                selector.NumberSelectorConfig(
+                                    min=1, max=65535, mode=selector.NumberSelectorMode.BOX
+                                )
+                            ),
+                            vol.Required(
+                                CONF_BROADCAST_BIND_IP,
+                                default=current.get(
+                                    CONF_BROADCAST_BIND_IP, DEFAULT_BROADCAST_BIND_IP
+                                ),
+                            ): selector.TextSelector(),
+                            vol.Optional(
+                                CONF_NETWORK_INTERFACE,
+                                default=current.get(
+                                    CONF_NETWORK_INTERFACE, DEFAULT_NETWORK_INTERFACE
+                                ),
+                            ): selector.TextSelector(),
+                            vol.Optional(
+                                CONF_SOURCE_PORT,
+                                default=current.get(
+                                    CONF_SOURCE_PORT, DEFAULT_SOURCE_PORT
+                                ),
+                            ): selector.NumberSelector(
+                                selector.NumberSelectorConfig(
+                                    min=0, max=65535, mode=selector.NumberSelectorMode.BOX
+                                )
+                            ),
+                            vol.Optional(
+                                CONF_AUTO_ADD_BIND_IP,
+                                default=current.get(
+                                    CONF_AUTO_ADD_BIND_IP, DEFAULT_AUTO_ADD_BIND_IP
+                                ),
+                            ): selector.BooleanSelector(),
+                            vol.Optional(
+                                CONF_BIND_NETMASK,
+                                default=current.get(CONF_BIND_NETMASK, DEFAULT_BIND_NETMASK),
+                            ): selector.NumberSelector(
+                                selector.NumberSelectorConfig(
+                                    min=0, max=32, mode=selector.NumberSelectorMode.BOX
+                                )
+                            ),
+                            vol.Optional(
+                                CONF_TARGETS, default=targets_text
+                            ): selector.TextSelector(
+                                selector.TextSelectorConfig(multiline=True)
+                            ),
+                        }
+                    ),
+                    {"collapsed": False},
+                ),
+                vol.Optional("filters"): section(
+                    vol.Schema(
+                        {
+                            vol.Optional(
+                                CONF_ALLOW_SOURCES,
+                                default=allow_sources,
+                            ): selector.TextSelector(
+                                selector.TextSelectorConfig(multiline=True)
+                            ),
+                            vol.Optional(
+                                CONF_DENY_SOURCES,
+                                default=deny_sources,
+                            ): selector.TextSelector(
+                                selector.TextSelectorConfig(multiline=True)
+                            ),
+                            **(
+                                {
+                                    vol.Optional(
+                                        CONF_ARTNET_UNIVERSE,
+                                        default=artnet_universe,
+                                    ): selector.TextSelector(
+                                        selector.TextSelectorConfig(multiline=True)
+                                    ),
+                                    vol.Optional(
+                                        CONF_ARTNET_SUBNET,
+                                        default=artnet_subnet,
+                                    ): selector.TextSelector(
+                                        selector.TextSelectorConfig(multiline=True)
+                                    ),
+                                    vol.Optional(
+                                        CONF_ARTNET_NET,
+                                        default=artnet_net,
+                                    ): selector.TextSelector(
+                                        selector.TextSelectorConfig(multiline=True)
+                                    ),
+                                }
+                                if protocol == DEFAULT_PROTOCOL
+                                else {}
+                            ),
+                        }
+                    ),
+                    {"collapsed": True},
+                ),
+                vol.Optional("advanced"): section(
+                    vol.Schema(
+                        {
+                            vol.Optional(
+                                CONF_RATE_LIMIT_PPS,
+                                default=current.get(
+                                    CONF_RATE_LIMIT_PPS, DEFAULT_RATE_LIMIT_PPS
+                                ),
+                            ): selector.NumberSelector(
+                                selector.NumberSelectorConfig(
+                                    min=0, mode=selector.NumberSelectorMode.BOX
+                                )
+                            ),
+                            **(
+                                {
+                                    vol.Optional(
+                                        CONF_ARTNET_OPCODES,
+                                        default=current.get(
+                                            CONF_ARTNET_OPCODES, DEFAULT_ARTNET_OPCODES
+                                        ),
+                                    ): selector.SelectSelector(
+                                        selector.SelectSelectorConfig(
+                                            options=ARTNET_OPCODES,
+                                            multiple=True,
+                                        )
+                                    )
+                                }
+                                if protocol == DEFAULT_PROTOCOL
+                                else {}
+                            ),
+                        }
+                    ),
+                    {"collapsed": True},
+                ),
             }
         )
 
-    def _get_filters_schema(self, defaults: dict[str, Any] | None = None) -> vol.Schema:
-        current = defaults or {}
-        return vol.Schema(
-            {
-                vol.Optional(
-                    CONF_ALLOW_SOURCES,
-                    default=current.get(CONF_ALLOW_SOURCES, ""),
-                ): selector.TextSelector(
-                    selector.TextSelectorConfig(multiline=True)
-                ),
-                vol.Optional(
-                    CONF_DENY_SOURCES,
-                    default=current.get(CONF_DENY_SOURCES, ""),
-                ): selector.TextSelector(
-                    selector.TextSelectorConfig(multiline=True)
-                ),
-                vol.Optional(
-                    CONF_ARTNET_UNIVERSE,
-                    default=current.get(CONF_ARTNET_UNIVERSE, ""),
-                ): selector.TextSelector(
-                    selector.TextSelectorConfig(multiline=True)
-                ),
-                vol.Optional(
-                    CONF_ARTNET_SUBNET,
-                    default=current.get(CONF_ARTNET_SUBNET, ""),
-                ): selector.TextSelector(
-                    selector.TextSelectorConfig(multiline=True)
-                ),
-                vol.Optional(
-                    CONF_ARTNET_NET,
-                    default=current.get(CONF_ARTNET_NET, ""),
-                ): selector.TextSelector(
-                    selector.TextSelectorConfig(multiline=True)
-                ),
-            }
-        )
 
-    def _get_advanced_schema(self, defaults: dict[str, Any] | None = None) -> vol.Schema:
-        current = defaults or {}
-        return vol.Schema(
-            {
-                vol.Optional(
-                    CONF_RATE_LIMIT_PPS,
-                    default=current.get(CONF_RATE_LIMIT_PPS, DEFAULT_RATE_LIMIT_PPS),
-                ): selector.NumberSelector(
-                    selector.NumberSelectorConfig(min=0, mode=selector.NumberSelectorMode.BOX)
-                ),
-                vol.Optional(
-                    CONF_TARGETS, default=current.get(CONF_TARGETS, [])
-                ): selector.ObjectSelector(),
-                vol.Optional(
-                    CONF_ARTNET_OPCODES,
-                    default=current.get(CONF_ARTNET_OPCODES, DEFAULT_ARTNET_OPCODES),
-                ): selector.SelectSelector(
-                    selector.SelectSelectorConfig(
-                        options=ARTNET_OPCODES,
-                        multiple=True,
-                    )
-                ),
-            }
-        )
+def _list_to_text(value: Any) -> str:
+    if isinstance(value, list):
+        return ", ".join(str(item).strip() for item in value if str(item).strip())
+    if isinstance(value, str):
+        return value
+    return ""
+
+
+def _targets_to_text(value: Any) -> str:
+    if isinstance(value, list):
+        parts: list[str] = []
+        for item in value:
+            if not isinstance(item, dict):
+                continue
+            host = str(item.get("host", "")).strip()
+            port = int(item.get("port", 0)) if item.get("port") is not None else 0
+            if host and port:
+                parts.append(f"{host}:{port}")
+            elif host:
+                parts.append(host)
+        return ", ".join(parts)
+    if isinstance(value, str):
+        return value
+    return ""
+
+
+def _flatten_sections(user_input: dict[str, Any]) -> dict[str, Any]:
+    flattened: dict[str, Any] = {}
+    for key, value in user_input.items():
+        if key in ("basic", "targets", "filters", "advanced") and isinstance(value, dict):
+            flattened.update(value)
+        else:
+            flattened[key] = value
+    return flattened
+
+
 class ArtNetRelayOptionsFlowHandler(config_entries.OptionsFlow):
     """Handle ArtNet Relay options."""
 
@@ -253,54 +323,22 @@ class ArtNetRelayOptionsFlowHandler(config_entries.OptionsFlow):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         if user_input is not None:
-            self._options = user_input
-            return await self.async_step_filters()
+            flat_input = _flatten_sections(user_input)
+            errors = _validate_user_input(flat_input)
+            if errors:
+                return self.async_show_form(
+                    step_id="init",
+                    data_schema=ArtNetRelayConfigFlow._get_setup_schema(self, user_input),
+                    errors=errors,
+                )
+            self._options = flat_input
+            return self.async_create_entry(title="", data=self._options)
 
         current = {**self._config_entry.data, **self._config_entry.options}
 
         return self.async_show_form(
             step_id="init",
-            data_schema=ArtNetRelayConfigFlow._get_basic_schema(self, current),
-        )
-
-    async def async_step_filters(
-        self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
-        if user_input is not None:
-            errors = _validate_user_input(user_input)
-            if errors:
-                return self.async_show_form(
-                    step_id="filters",
-                    data_schema=ArtNetRelayConfigFlow._get_filters_schema(self, user_input),
-                    errors=errors,
-                )
-            self._options.update(user_input)
-            return await self.async_step_advanced()
-
-        current = {**self._config_entry.data, **self._config_entry.options}
-        return self.async_show_form(
-            step_id="filters",
-            data_schema=ArtNetRelayConfigFlow._get_filters_schema(self, current),
-        )
-
-    async def async_step_advanced(
-        self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
-        if user_input is not None:
-            errors = _validate_user_input(user_input)
-            if errors:
-                return self.async_show_form(
-                    step_id="advanced",
-                    data_schema=ArtNetRelayConfigFlow._get_advanced_schema(self, user_input),
-                    errors=errors,
-                )
-            self._options.update(user_input)
-            return self.async_create_entry(title="", data=self._options)
-
-        current = {**self._config_entry.data, **self._config_entry.options}
-        return self.async_show_form(
-            step_id="advanced",
-            data_schema=ArtNetRelayConfigFlow._get_advanced_schema(self, current),
+            data_schema=ArtNetRelayConfigFlow._get_setup_schema(self, current),
         )
 
 
@@ -309,21 +347,44 @@ def _validate_user_input(user_input: dict[str, Any]) -> dict[str, str]:
 
     targets = user_input.get(CONF_TARGETS, [])
     if targets:
-        if not isinstance(targets, list):
+        if isinstance(targets, list):
+            for item in targets:
+                if not isinstance(item, dict):
+                    errors["base"] = "invalid_targets"
+                    return errors
+                host = item.get("host")
+                port = item.get("port")
+                if not isinstance(host, str) or not host.strip():
+                    errors["base"] = "invalid_targets"
+                    return errors
+                if port is None or not isinstance(port, int) or not (1 <= port <= 65535):
+                    errors["base"] = "invalid_targets"
+                    return errors
+        elif isinstance(targets, str):
+            parts = [p.strip() for p in targets.replace("\n", ",").split(",")]
+            for part in parts:
+                if not part:
+                    continue
+                if ":" in part:
+                    host, port_text = part.split(":", 1)
+                    if not host.strip():
+                        errors["base"] = "invalid_targets"
+                        return errors
+                    try:
+                        port = int(port_text)
+                    except ValueError:
+                        errors["base"] = "invalid_targets"
+                        return errors
+                    if not (1 <= port <= 65535):
+                        errors["base"] = "invalid_targets"
+                        return errors
+                else:
+                    if not part.strip():
+                        errors["base"] = "invalid_targets"
+                        return errors
+        else:
             errors["base"] = "invalid_targets"
             return errors
-        for item in targets:
-            if not isinstance(item, dict):
-                errors["base"] = "invalid_targets"
-                return errors
-            host = item.get("host")
-            port = item.get("port")
-            if not isinstance(host, str) or not host.strip():
-                errors["base"] = "invalid_targets"
-                return errors
-            if port is None or not isinstance(port, int) or not (1 <= port <= 65535):
-                errors["base"] = "invalid_targets"
-                return errors
 
     for key in (CONF_ALLOW_SOURCES, CONF_DENY_SOURCES):
         value = user_input.get(key, "")
@@ -381,7 +442,7 @@ def _validate_user_input(user_input: dict[str, Any]) -> dict[str, str]:
 
     rate_limit = user_input.get(CONF_RATE_LIMIT_PPS, DEFAULT_RATE_LIMIT_PPS)
     if rate_limit is not None:
-        if not isinstance(rate_limit, int) or rate_limit < 0:
+        if not isinstance(rate_limit, (int, float)) or rate_limit < 0:
             errors["base"] = "invalid_rate_limit"
             return errors
 

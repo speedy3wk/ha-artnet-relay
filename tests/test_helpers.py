@@ -19,6 +19,11 @@ def test_parse_targets_list_only():
     assert targets[1].host == "10.0.0.255"
     assert targets[1].port == 6454
 
+    targets = module._parse_targets("2.255.255.255:6454\n10.0.0.255", 6454)
+    assert len(targets) == 2
+    assert targets[0].host == "2.255.255.255"
+    assert targets[0].port == 6454
+
 
 def test_parse_ip_list_only_list():
     module = _load_module()

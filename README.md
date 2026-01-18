@@ -16,14 +16,12 @@ Relay Art-Net (UDP) packets from a listen socket to one or more broadcast/unicas
 4. Add integration via **Settings → Devices & Services**.
 
 ## Configuration
-All options are configured via the UI. Targets are a list of objects:
+All options are configured via the UI. Targets are entered as a list:
 
-```json
-[
-	{"host": "2.255.255.255", "port": 6454},
-	{"host": "10.0.0.255", "port": 6454}
-]
 ```
+2.255.255.255:6454, 10.0.0.255:6454
+```
+or one per line.
 
 Optional filters:
 - Allow source IPs (list)
