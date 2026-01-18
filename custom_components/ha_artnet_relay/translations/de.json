@@ -1,4 +1,5 @@
 {
+  "icon": "mdi:lan",
   "config": {
     "step": {
       "user": {
