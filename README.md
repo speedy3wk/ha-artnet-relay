@@ -40,3 +40,8 @@ Advanced:
 
 ## Support
 Open an issue on GitHub with logs and configuration details.
+
+## AI Notes
+- Created using AI Tools.
+- Generated Code is always validated/checked. 
+- Not all features are validated against "real ArtNet hardware" yet. 
