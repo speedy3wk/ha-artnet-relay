@@ -1,5 +1,7 @@
 # ArtNet Relay (Home Assistant)
 
+[![Add repository to Home Assistant](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=speedy3wk&repository=ha-artnet-relay&category=integration)
+
 Relay Art-Net (UDP) packets from a listen socket to one or more broadcast/unicast targets. Designed for setups where Art-Net devices live on a different IP range (e.g., 2.x/10.x) and need a virtual/bind address on the HA host.
 
 ## Features
@@ -10,7 +12,7 @@ Relay Art-Net (UDP) packets from a listen socket to one or more broadcast/unicas
 - Config Flow + Options Flow UI.
 
 ## Installation (HACS)
-1. Add this repository as a custom repository (Integration).
+1. Click the button above to add this repository as a custom repository in HACS (Integration).
 2. Install **ArtNet Relay**.
 3. Restart Home Assistant.
 4. Add integration via **Settings → Devices & Services**.
