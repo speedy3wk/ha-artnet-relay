@@ -1,5 +1,8 @@
 # ArtNet Relay (Home Assistant)
 
+[![HACS Custom](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://www.hacs.xyz/docs/faq/custom_repositories/)
+[![Release](https://img.shields.io/github/v/release/speedy3wk/ha-artnet-relay.svg)](https://github.com/speedy3wk/ha-artnet-relay/releases)
+
 [![Add repository to Home Assistant](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=speedy3wk&repository=ha-artnet-relay&category=integration)
 
 Relay Art-Net (UDP) packets from a listen socket to one or more broadcast/unicast targets. Designed for setups where Art-Net devices live on a different IP range (e.g., 2.x/10.x) and need a virtual/bind address on the HA host.
